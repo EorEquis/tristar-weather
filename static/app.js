@@ -8,10 +8,10 @@ function setCurrent(o){
  if(!o){$('status').textContent='NO DATA';return;}
  $('temp').textContent=number(o.bme_temp_c)+' °C';$('dew').textContent='Dew point '+number(o.dew_point_c)+' °C';
  $('humidity').textContent=number(o.humidity_pct,0)+'%';$('pressure').textContent=number(inhg(o.pressure_hpa),2)+' inHg';
- $('sky').textContent=number(o.sky_temperature_c)+' °C';$('ground').textContent=number(o.ground_temperature_c)+' °C';
- $('rain').textContent=number(o.rain_daily_mm,2)+' mm';$('rainbig').textContent=number(o.rain_daily_mm,2);
+ $('sky').textContent=number(o.sky_temperature_c)+' °C';
+ $('rain').textContent=number(o.rain_daily_mm,2)+' mm';
  $('rainrate').textContent='Rate '+number(o.rain_rate_mm_hr,2)+' mm/hr';$('rainhour').textContent=number(o.rain_hourly_mm,2)+' mm';
- $('rate').textContent=number(o.rain_rate_mm_hr,2)+' mm/hr';
+
  $('wind').textContent=number(mph(o.wind_speed_mps),1);
  $('direction').textContent=o.wind_dir_deg==null?'Direction unavailable':cardinal(o.wind_dir_deg)+' · '+number(o.wind_dir_deg,1)+'°';
  $('needle').setAttribute('transform','rotate('+(o.wind_dir_deg??0)+' 120 120)');
@@ -25,7 +25,7 @@ function setCurrent(o){
 }
 const NS='http://www.w3.org/2000/svg';
 function node(tag,attrs,text){const n=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs||{}))n.setAttribute(k,v);if(text!=null)n.textContent=text;return n;}
-function chart(id,rows,series){
+function chart(id,rows,series,zeroFloor=false){
  const root=$(id);root.replaceChildren();
  const valid=rows.filter(r=>series.some(s=>Number.isFinite(Number(r[s.key]))&&r[s.key]!=null));
  if(valid.length<2){const e=document.createElement('div');e.className='chart-empty';e.textContent='Not enough observations';root.append(e);return;}
@@ -33,7 +33,7 @@ function chart(id,rows,series){
  const times=valid.map(x=>Date.parse(x.timestamp)),minX=Math.min(...times),maxX=Math.max(...times);
  const values=valid.flatMap(row=>series.map(s=>row[s.key]==null?null:s.convert? s.convert(row[s.key]):row[s.key])).filter(v=>v!=null&&Number.isFinite(v));
  if(!values.length||minX===maxX)return;
- let lo=Math.min(...values),hi=Math.max(...values),pad=(hi-lo)*.12||1;lo-=pad;hi+=pad;
+ let lo=Math.min(...values),hi=Math.max(...values),pad=(hi-lo)*.12||1;if(zeroFloor){lo=0;hi=Math.max(hi*1.12,0.5);}else{lo-=pad;hi+=pad;}
  const x=v=>l+(v-minX)/(maxX-minX)*(w-l-r),y=v=>h-b-(v-lo)/(hi-lo)*(h-t-b);
  const svg=node('svg',{viewBox:'0 0 500 210',preserveAspectRatio:'none',role:'img','aria-label':id.replace('chart-','')+' historical trend'});
  for(let i=0;i<4;i++){const yy=t+i*(h-t-b)/3;svg.append(node('line',{x1:l,y1:yy,x2:w-r,y2:yy,stroke:'#25384d','stroke-dasharray':'4 5'}));svg.append(node('text',{x:3,y:yy+4},(hi-(hi-lo)*i/3).toFixed(2)));}
@@ -52,8 +52,10 @@ let activeRange='today';
 async function refreshCurrent(){try{const r=await fetch('/api/current',{cache:'no-store'});if(!r.ok){const info=await r.json().catch(()=>({}));throw Error(info.detail||'Upstream service unavailable');}setCurrent(await r.json());$('error').textContent='';}catch(e){$('status').textContent='● OFFLINE';$('status').className='status stale';$('error').textContent='Current conditions unavailable: '+e.message;}}
 async function refreshHistory(){try{const r=await fetch('/api/history?range='+activeRange,{cache:'no-store'});if(!r.ok){const info=await r.json().catch(()=>({}));throw Error(info.detail||'Upstream service unavailable');}const data=await r.json();if(data.range!==activeRange)return;const rows=data.observations;
  chart('chart-temp',rows,[{key:'bme_temp_c',color:'#80c6e8'},{key:'dew_point_c',color:'#8de5b5'}]);
+ chart('chart-humidity',rows,[{key:'humidity_pct',color:'#80c6e8'}]);
  chart('chart-pressure',rows,[{key:'pressure_hpa',color:'#80c6e8',convert:inhg}]);
- chart('chart-rain',rows,[{key:'rain_daily_mm',color:'#8de5b5'}]);
- }catch(e){for(const id of ['chart-temp','chart-pressure','chart-rain'])$(id).textContent='History unavailable: '+e.message;}}
+ chart('chart-sky',rows,[{key:'sky_temperature_c',color:'#80c6e8'}]);
+ chart('chart-rain',rows,[{key:'rain_daily_mm',color:'#8de5b5'}],true);
+ }catch(e){for(const id of ['chart-temp','chart-humidity','chart-pressure','chart-sky','chart-rain'])$(id).textContent='History unavailable: '+e.message;}}
 document.querySelectorAll('[data-range]').forEach(btn=>btn.addEventListener('click',()=>{activeRange=btn.dataset.range;document.querySelectorAll('[data-range]').forEach(b=>b.classList.toggle('active',b===btn));refreshHistory();}));
 refreshCurrent();refreshHistory();setInterval(refreshCurrent,30000);setInterval(refreshHistory,300000);
