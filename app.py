@@ -1,6 +1,7 @@
 """Read-only weather dashboard. Database timestamps are UTC DATETIME."""
 import os
 import json
+import logging
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
 from datetime import datetime, timedelta, timezone
@@ -13,6 +14,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+logger = logging.getLogger('tristar.weather')
 ROOT = Path(__file__).parent
 ZONE = ZoneInfo(os.getenv("STATION_TIMEZONE", "America/Chicago"))
 app = FastAPI(title="TriStar Weather")
@@ -59,7 +61,8 @@ def current():
         return {"observation": {"timestamp": payload["timestamp"],
                 **{field: payload.get(field) for field in FIELDS}}}
     except (OSError, ValueError, KeyError, HTTPError, URLError) as exc:
-        raise HTTPException(status_code=503, detail="Live weather station unavailable") from exc
+        logger.exception("Live weather station request failed")
+        raise HTTPException(status_code=503, detail=f"Live weather station error: {exc}") from exc
 
 @app.get("/api/history")
 def history(range: str = Query("today", pattern="^(today|24h|7d|30d)$")):
@@ -74,7 +77,7 @@ def history(range: str = Query("today", pattern="^(today|24h|7d|30d)$")):
     try:
         with closing(connection()) as db, db.cursor() as cur:
             cur.execute("""
-                SELECT FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(obs_timestamp)/%s)*%s) AS obs_timestamp,
+                SELECT MIN(obs_timestamp) AS obs_timestamp,
                        AVG(bme_temp_c) AS bme_temp_c,
                        AVG(dew_point_c) AS dew_point_c,
                        AVG(pressure_hpa) AS pressure_hpa,
@@ -84,8 +87,9 @@ def history(range: str = Query("today", pattern="^(today|24h|7d|30d)$")):
                 WHERE obs_timestamp >= %s AND obs_timestamp <= %s
                 GROUP BY FLOOR(UNIX_TIMESTAMP(obs_timestamp)/%s)
                 ORDER BY obs_timestamp
-            """, (bucket, bucket, start.replace(tzinfo=None), now.replace(tzinfo=None), bucket))
+            """, (start.replace(tzinfo=None), now.replace(tzinfo=None), bucket))
             rows = [serialize(row) for row in cur.fetchall()]
         return {"range": range, "timezone": str(ZONE), "observations": rows}
     except (pymysql.MySQLError, KeyError) as exc:
-        raise HTTPException(status_code=503, detail="Weather database unavailable") from exc
+        logger.exception("MySQL historical query failed")
+        raise HTTPException(status_code=503, detail=f"MySQL history error: {exc}") from exc
