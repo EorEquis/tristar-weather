@@ -4,12 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="theme-color" content="#09121e">
-    <title>
-      TriStar Weather
-    </title>
+    <title>TriStar Weather</title>
     <link rel="stylesheet" href="/static/styles.css">
-    <script src="/static/app.js" defer>
-    </script>
+    <script src="/static/app.js" defer></script>
   </head>
   <body>
     <div class="shell">
@@ -17,67 +14,34 @@
         <div class="brand">
           <img class="brand-logo" src="https://live.tristarobservatory.com/static/tso-logo.png" alt="TriStar Observatory logo" width="76" height="76">
           <div>
-            <div class="eyebrow">
-              TRISTAR OBSERVATORY
-            </div>
-            <h1>
-              Weather
-            </h1>
-            <div id="updated" class="muted">
-              Waiting for observations…
-            </div>
+            <div class="eyebrow">TRISTAR OBSERVATORY</div>
+            <h1>Weather</h1>
+            <div id="updated" class="muted">Waiting for observations…</div>
           </div>
         </div>
         <nav class="site-nav" aria-label="Main navigation">
-          <a href="https://allsky.tristarobservatory.com/">
-            AllSky
-          </a>
-          <a href="https://tristarobservatory.com/">
-            Home
-          </a>
-          <a href="https://tristarobservatory.com/gallery/">
-            Image Gallery
-          </a>
-          <a href="https://scopecam.tristarobservatory.com/">
-            ScopeCam
-          </a>
-          <a href="https://tristarobservatory.com/software/">
-            Software
-          </a>
-          <a href="https://live.tristarobservatory.com/">
-            TSOLive
-          </a>
-          <a href="https://weather.tristarobservatory.com/" aria-current="page">
-            Weather
-          </a>
+          <a href="https://allsky.tristarobservatory.com/">AllSky</a>
+          <a href="https://tristarobservatory.com/">Home</a>
+          <a href="https://tristarobservatory.com/gallery/">Image Gallery</a>
+          <a href="https://scopecam.tristarobservatory.com/">ScopeCam</a>
+          <a href="https://tristarobservatory.com/software/">Software</a>
+          <a href="https://live.tristarobservatory.com/">TSOLive</a>
+          <a href="https://weather.tristarobservatory.com/" aria-current="page">Weather</a>
         </nav>
       </header>
       <div class="dashboard-controls">
         <div class="ranges" role="group" aria-label="Graph time range">
-          <button data-range="today" class="active">
-            Today
-          </button>
-          <button data-range="24h">
-            24 Hours
-          </button>
+          <button data-range="today" class="active">Today</button>
+          <button data-range="24h">24 Hours</button>
         </div>
-        <div id="status" class="status">
-          CONNECTING
-        </div>
+        <div id="status" class="status">CONNECTING</div>
       </div>
       <main class="dashboard">
         <article class="metric temp">
-          <label>
-            AMBIENT TEMPERATURE
-          </label>
-          <strong id="temp">
-            —
-          </strong>
-          <small id="dew">
-            Dew point —
-          </small>
-          <div id="chart-temp" class="chart">
-          </div>
+          <label>AMBIENT TEMPERATURE</label>
+          <strong id="temp">—</strong>
+          <small id="dew">Dew point —</small>
+          <div id="chart-temp" class="chart"></div>
           <div class="legend">
             <i class="cyan">
             </i>
@@ -88,69 +52,35 @@
           </div>
         </article>
         <article class="metric humidity">
-          <label>
-            HUMIDITY
-          </label>
-          <strong id="humidity">
-            —
-          </strong>
-          <small>
-            Relative humidity
-          </small>
-          <div id="chart-humidity" class="chart">
-          </div>
+          <label>HUMIDITY</label>
+          <strong id="humidity">—</strong>
+          <small>Relative humidity</small>
+          <div id="chart-humidity" class="chart"></div>
         </article>
         <article class="metric pressure">
-          <label>
-            BAROMETRIC PRESSURE
-          </label>
-          <strong id="pressure">
-            —
-          </strong>
-          <small>
-            Sea-level pressure · inHg
-          </small>
-          <div id="chart-pressure" class="chart">
-          </div>
+          <label>BAROMETRIC PRESSURE</label>
+          <strong id="pressure">—</strong>
+          <small>Sea-level pressure · inHg</small>
+          <div id="chart-pressure" class="chart"></div>
         </article>
         <article class="metric sky">
-          <label>
-            SKY TEMPERATURE
-          </label>
-          <strong id="sky">
-            —
-          </strong>
-          <small>
-            Infrared sky measurement
-          </small>
-          <div id="chart-sky" class="chart">
-          </div>
+          <label>SKY TEMPERATURE</label>
+          <strong id="sky">—</strong>
+          <small>Infrared sky measurement</small>
+          <div id="chart-sky" class="chart"></div>
         </article>
         <article class="metric rain">
-          <label>
-            RAIN TODAY
-          </label>
-          <strong id="rain">
-            —
-          </strong>
-          <small id="rainrate">
-            Current rate —
-          </small>
-          <div id="chart-rain" class="chart">
-          </div>
+          <label>RAIN TODAY</label>
+          <strong id="rain">—</strong>
+          <small id="rainrate">Current rate —</small>
+          <div id="chart-rain" class="chart"></div>
           <div class="rain-detail">
-            <span id="rainhour">
-              —
-            </span>
-            <span>
-              Last hour
-            </span>
+            <span id="rainhour">—</span>
+            <span>Last hour</span>
           </div>
         </article>
         <article class="panel wind">
-          <div class="panel-title">
-            WIND DIRECTION & SPEED
-          </div>
+          <div class="panel-title">WIND DIRECTION & SPEED</div>
           <div class="compass-wrap">
             <svg id="compass" viewBox="0 0 240 240" role="img" aria-label="Wind compass">
               <circle cx="120" cy="120" r="91" fill="#101c2c" stroke="#294059" stroke-width="2"/>
@@ -158,18 +88,10 @@
                 <path d="M120 30v13 M120 197v13 M30 120h13 M197 120h13"/>
               </g>
               <g fill="#8ca6c7" font-size="15" text-anchor="middle">
-                <text x="120" y="19" fill="#80c6e8">
-                  N
-                </text>
-                <text x="224" y="125">
-                  E
-                </text>
-                <text x="120" y="235">
-                  S
-                </text>
-                <text x="16" y="125">
-                  W
-                </text>
+                <text x="120" y="19" fill="#80c6e8">N</text>
+                <text x="224" y="125">E</text>
+                <text x="120" y="235">S</text>
+                <text x="16" y="125">W</text>
               </g>
               <g id="needle">
                 <path d="M120 43 L110 119 L120 108 L130 119 Z" fill="#80c6e8"/>
@@ -177,27 +99,15 @@
               <circle cx="120" cy="120" r="6" fill="#e5effd"/>
             </svg>
             <div class="wind-numbers">
-              <strong id="wind">
-                —
-              </strong>
-              <small>
-                mph
-              </small>
-              <div id="direction" class="muted">
-                —
-              </div>
+              <strong id="wind">—</strong>
+              <small>mph</small>
+              <div id="direction" class="muted">—</div>
             </div>
           </div>
           <div class="instrument-foot">
-            <span id="gust10">
-              10-min gust —
-            </span>
-            <span id="gusthour">
-              Hour gust —
-            </span>
-            <span id="gusttoday">
-              Today gust —
-            </span>
+            <span id="gust10">10-min gust —</span>
+            <span id="gusthour">Hour gust —</span>
+            <span id="gusttoday">Today gust —</span>
           </div>
         </article>
       </main>
