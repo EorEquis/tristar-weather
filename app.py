@@ -1,0 +1,79 @@
+"""Read-only weather dashboard. Database timestamps are UTC DATETIME."""
+import os
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
+from contextlib import closing
+from pathlib import Path
+
+import pymysql
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+
+ROOT = Path(__file__).parent
+ZONE = ZoneInfo(os.getenv("STATION_TIMEZONE", "America/Chicago"))
+app = FastAPI(title="TriStar Weather")
+app.mount("/static", StaticFiles(directory=ROOT / "static"), name="static")
+
+FIELDS = ("bme_temp_c", "dew_point_c", "humidity_pct", "pressure_hpa",
+          "pressure_sealevel_hpa", "sky_temperature_c", "ground_temperature_c",
+          "wind_speed_mps", "wind_dir_deg", "wind_gust_10min", "wind_gust_hour",
+          "wind_gust_today", "rain_rate_mm_hr", "rain_hourly_mm", "rain_daily_mm")
+SELECT = ", ".join(["obs_timestamp", *FIELDS])
+
+def connection():
+    return pymysql.connect(
+        host=os.environ["MYSQL_HOST"], port=int(os.getenv("MYSQL_PORT", "3306")),
+        user=os.environ["MYSQL_USER"], password=os.environ["MYSQL_PASSWORD"],
+        database=os.environ["MYSQL_DATABASE"], cursorclass=pymysql.cursors.DictCursor,
+        connect_timeout=5, read_timeout=15, autocommit=True, charset="utf8mb4"
+    )
+
+def serialize(row):
+    if row is None:
+        return None
+    row = dict(row)
+    row["timestamp"] = row.pop("obs_timestamp").replace(tzinfo=timezone.utc).isoformat()
+    return row
+
+@app.get("/")
+def homepage():
+    return FileResponse(ROOT / "static" / "index.html")
+
+@app.get("/api/current")
+def current():
+    try:
+        with closing(connection()) as db, db.cursor() as cur:
+            cur.execute(f"SELECT {SELECT} FROM observations ORDER BY observation_id DESC LIMIT 1")
+            return {"observation": serialize(cur.fetchone())}
+    except (pymysql.MySQLError, KeyError) as exc:
+        raise HTTPException(status_code=503, detail="Weather database unavailable") from exc
+
+@app.get("/api/history")
+def history(range: str = Query("today", pattern="^(today|24h|7d|30d)$")):
+    now = datetime.now(timezone.utc)
+    if range == "today":
+        local = now.astimezone(ZONE)
+        start = local.replace(hour=0, minute=0, second=0, microsecond=0).astimezone(timezone.utc)
+    else:
+        start = now - timedelta(hours={"24h":24,"7d":168,"30d":720}[range])
+    # Fixed time buckets keep chart payloads modest. Bucket by UTC epoch seconds.
+    bucket = {"today":300, "24h":600, "7d":3600, "30d":10800}[range]
+    try:
+        with closing(connection()) as db, db.cursor() as cur:
+            cur.execute("""
+                SELECT FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(obs_timestamp)/%s)*%s) AS obs_timestamp,
+                       AVG(bme_temp_c) AS bme_temp_c,
+                       AVG(dew_point_c) AS dew_point_c,
+                       AVG(pressure_hpa) AS pressure_hpa,
+                       AVG(pressure_sealevel_hpa) AS pressure_sealevel_hpa,
+                       MAX(rain_daily_mm) AS rain_daily_mm
+                FROM observations
+                WHERE obs_timestamp >= %s AND obs_timestamp <= %s
+                GROUP BY FLOOR(UNIX_TIMESTAMP(obs_timestamp)/%s)
+                ORDER BY obs_timestamp
+            """, (bucket, bucket, start.replace(tzinfo=None), now.replace(tzinfo=None), bucket))
+            rows = [serialize(row) for row in cur.fetchall()]
+        return {"range": range, "timezone": str(ZONE), "observations": rows}
+    except (pymysql.MySQLError, KeyError) as exc:
+        raise HTTPException(status_code=503, detail="Weather database unavailable") from exc
