@@ -1,5 +1,8 @@
 """Read-only weather dashboard. Database timestamps are UTC DATETIME."""
 import os
+import json
+from urllib.request import Request, urlopen
+from urllib.error import HTTPError, URLError
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 from contextlib import closing
@@ -42,12 +45,21 @@ def homepage():
 
 @app.get("/api/current")
 def current():
+    """Fetch fresh measurements from the Pi, never from MySQL."""
     try:
-        with closing(connection()) as db, db.cursor() as cur:
-            cur.execute(f"SELECT {SELECT} FROM observations ORDER BY observation_id DESC LIMIT 1")
-            return {"observation": serialize(cur.fetchone())}
-    except (pymysql.MySQLError, KeyError) as exc:
-        raise HTTPException(status_code=503, detail="Weather database unavailable") from exc
+        request = Request(
+            os.environ["WX_STATION_URL"].rstrip("/") + "/api/weather/current",
+            headers={"Accept": "application/json", "User-Agent": "TriStar-Weather/1.0"},
+        )
+        with urlopen(request, timeout=5) as response:
+            payload = json.load(response)
+        if not isinstance(payload, dict) or not payload.get("timestamp"):
+            raise ValueError("Weather station returned an invalid observation")
+        # Return only fields required by the dashboard; no system metrics or config.
+        return {"observation": {"timestamp": payload["timestamp"],
+                **{field: payload.get(field) for field in FIELDS}}}
+    except (OSError, ValueError, KeyError, HTTPError, URLError) as exc:
+        raise HTTPException(status_code=503, detail="Live weather station unavailable") from exc
 
 @app.get("/api/history")
 def history(range: str = Query("today", pattern="^(today|24h|7d|30d)$")):
