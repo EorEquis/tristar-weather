@@ -20,7 +20,7 @@ function setCurrent(o){
  $('gusthour').textContent='Hour gust '+number(mph(o.wind_gust_hour),1)+' mph';
  $('gusttoday').textContent='Today gust '+number(mph(o.wind_gust_today),1)+' mph';
  const stamp=new Date(o.timestamp),age=Date.now()-stamp.getTime();
- $('updated').textContent='Last observation: '+stamp.toLocaleString('en-US',{timeZone:zone,dateStyle:'medium',timeStyle:'medium'})+' (station local)';
+ $('updated').textContent='Last observation: '+stamp.toLocaleString('en-US',{timeZone:zone,dateStyle:'medium',timeStyle:'medium',hourCycle:'h23'})+' (station local)';
  $('status').textContent=age<180000?'● LIVE':'● STALE';$('status').className='status '+(age<180000?'live':'stale');
 }
 const NS='http://www.w3.org/2000/svg';
@@ -37,7 +37,7 @@ function chart(id,rows,series,zeroFloor=false){
  const x=v=>l+(v-minX)/(maxX-minX)*(w-l-r),y=v=>h-b-(v-lo)/(hi-lo)*(h-t-b);
  const svg=node('svg',{viewBox:'0 0 500 210',preserveAspectRatio:'none',role:'img','aria-label':id.replace('chart-','')+' historical trend'});
  for(let i=0;i<4;i++){const yy=t+i*(h-t-b)/3;svg.append(node('line',{x1:l,y1:yy,x2:w-r,y2:yy,stroke:'#25384d','stroke-dasharray':'4 5'}));svg.append(node('text',{x:3,y:yy+4},(hi-(hi-lo)*i/3).toFixed(2)));}
- const fmt=ms=>new Date(ms).toLocaleString('en-US',{timeZone:zone,month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit'});
+ const fmt=ms=>new Date(ms).toLocaleString('en-US',{timeZone:zone,month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
  svg.append(node('text',{x:l,y:h-5},fmt(minX)));svg.append(node('text',{x:w-r,y:h-5,'text-anchor':'end'},fmt(maxX)));
  for(const s of series){let path='',drawing=false,previous=null;
  for(const row of valid){const raw=row[s.key],v=raw==null?null:(s.convert?s.convert(raw):raw),time=Date.parse(row.timestamp);
