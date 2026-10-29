@@ -20,7 +20,7 @@ function setCurrent(o){
  $('gusthour').textContent='Hour gust '+number(mph(o.wind_gust_hour),1)+' mph';
  $('gusttoday').textContent='Today gust '+number(mph(o.wind_gust_today),1)+' mph';
  const stamp=new Date(o.timestamp),age=Date.now()-stamp.getTime();
- $('updated').textContent='Last observation: '+stamp.toLocaleString('en-US',{timeZone:zone,dateStyle:'medium',timeStyle:'medium',hourCycle:'h23'})+' (station local)';
+ $('updated').textContent='Last observation: '+(()=>{const p=Object.fromEntries(new Intl.DateTimeFormat('en-US',{timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(stamp).map(x=>[x.type,x.value]));return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}:${p.second}`;})()+' (station local)';
  $('status').textContent=age<180000?'● LIVE':'● STALE';$('status').className='status '+(age<180000?'live':'stale');
 }
 const NS='http://www.w3.org/2000/svg';
