@@ -58,8 +58,8 @@ def current():
         if not isinstance(payload, dict) or not payload.get("timestamp"):
             raise ValueError("Weather station returned an invalid observation")
         # Return only fields required by the dashboard; no system metrics or config.
-        return {"observation": {"timestamp": payload["timestamp"],
-                **{field: payload.get(field) for field in FIELDS}}}
+        return {"timestamp": payload["timestamp"],
+                **{field: payload.get(field) for field in FIELDS}}
     except (OSError, ValueError, KeyError, HTTPError, URLError) as exc:
         logger.exception("Live weather station request failed")
         raise HTTPException(status_code=503, detail=f"Live weather station error: {exc}") from exc
