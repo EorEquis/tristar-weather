@@ -80,6 +80,8 @@ def history(range: str = Query("today", pattern="^(today|24h|7d|30d)$")):
                 SELECT MIN(obs_timestamp) AS obs_timestamp,
                        AVG(bme_temp_c) AS bme_temp_c,
                        AVG(dew_point_c) AS dew_point_c,
+                       AVG(humidity_pct) AS humidity_pct,
+                       AVG(sky_temperature_c) AS sky_temperature_c,
                        AVG(pressure_hpa) AS pressure_hpa,
                        AVG(pressure_sealevel_hpa) AS pressure_sealevel_hpa,
                        MAX(rain_daily_mm) AS rain_daily_mm
