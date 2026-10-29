@@ -49,7 +49,7 @@ function chart(id,rows,series){
  root.append(svg);
 }
 let activeRange='today';
-async function refreshCurrent(){try{const r=await fetch('/api/current',{cache:'no-store'});if(!r.ok){const info=await r.json().catch(()=>({}));throw Error(info.detail||'Upstream service unavailable');}setCurrent((await r.json()).observation);$('error').textContent='';}catch(e){$('status').textContent='● OFFLINE';$('status').className='status stale';$('error').textContent='Current conditions unavailable: '+e.message;}}
+async function refreshCurrent(){try{const r=await fetch('/api/current',{cache:'no-store'});if(!r.ok){const info=await r.json().catch(()=>({}));throw Error(info.detail||'Upstream service unavailable');}setCurrent(await r.json());$('error').textContent='';}catch(e){$('status').textContent='● OFFLINE';$('status').className='status stale';$('error').textContent='Current conditions unavailable: '+e.message;}}
 async function refreshHistory(){try{const r=await fetch('/api/history?range='+activeRange,{cache:'no-store'});if(!r.ok){const info=await r.json().catch(()=>({}));throw Error(info.detail||'Upstream service unavailable');}const data=await r.json();if(data.range!==activeRange)return;const rows=data.observations;
  chart('chart-temp',rows,[{key:'bme_temp_c',color:'#80c6e8'},{key:'dew_point_c',color:'#8de5b5'}]);
  chart('chart-pressure',rows,[{key:'pressure_hpa',color:'#80c6e8',convert:inhg}]);
