@@ -50,7 +50,7 @@ def current():
     """Fetch fresh measurements from the Pi, never from MySQL."""
     try:
         request = Request(
-            os.environ["WX_STATION_URL"].rstrip("/") + "/api/weather/current",
+            os.environ["WX_STATION_URL"],
             headers={"Accept": "application/json", "User-Agent": "TriStar-Weather/1.0"},
         )
         with urlopen(request, timeout=5) as response:
