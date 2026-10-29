@@ -26,3 +26,6 @@
 @media(max-height:720px){.topbar{min-height:68px}.metric{padding:10px 13px;gap:4px}.metric strong{font-size:clamp(22px,2.2vw,30px)}.chart{margin-top:4px;min-height:60px}.dashboard{gap:9px}.panel{padding:10px 13px}}
 @media(max-width:900px){.topbar{min-height:0}.site-nav{order:3;width:100%;justify-content:flex-start}.dashboard{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr))}.temp{grid-area:1/1}.humidity{grid-area:1/2}.pressure{grid-area:2/1}.sky{grid-area:2/2}.rain{grid-area:3/1}.wind{grid-area:3/2}.metric strong{font-size:clamp(20px,3vw,30px)}}
 @media(max-width:540px){.shell{padding:0 8px 8px}.topbar{gap:5px}.brand-mark{display:none}.site-nav{font-size:10px;gap:8px}.overview-breadcrumb{font-size:9px}.dashboard{gap:6px;padding-top:6px}.metric,.panel{padding:8px}.metric{gap:2px}.metric strong{font-size:clamp(17px,4vw,24px)}.metric small{font-size:10px}.chart{min-height:25px;margin-top:2px}.chart text{font-size:16px}.compass-wrap{gap:3px}.compass-wrap svg{width:55%}.wind-numbers strong{font-size:23px}.instrument-foot{font-size:9px}.dashboard-controls{padding-top:5px}.ranges button{font-size:10px;padding:5px}.status{font-size:9px}}
+
+.brand-logo{display:block;width:clamp(48px,5vw,76px);height:clamp(48px,5vw,76px);object-fit:contain;flex-shrink:0}
+@media(max-width:700px){.brand-logo{width:48px;height:48px}}
