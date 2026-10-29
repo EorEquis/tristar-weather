@@ -7,7 +7,7 @@ const zone='America/Chicago';
 function setCurrent(o){
  if(!o){$('status').textContent='NO DATA';return;}
  $('temp').textContent=number(o.bme_temp_c)+' °C';$('dew').textContent='Dew point '+number(o.dew_point_c)+' °C';
- $('humidity').textContent=number(o.humidity_pct,0)+'%';$('pressure').textContent=number(inhg(o.pressure_hpa),2)+' inHg';
+ $('humidity').textContent=number(o.humidity_pct,0)+'%';$('pressure').textContent=number(inhg(o.pressure_sealevel_hpa),2)+' inHg';
  $('sky').textContent=number(o.sky_temperature_c)+' °C';
  $('rain').textContent=number(o.rain_daily_mm,2)+' mm';
  $('rainrate').textContent='Rate '+number(o.rain_rate_mm_hr,2)+' mm/hr';$('rainhour').textContent=number(o.rain_hourly_mm,2)+' mm';
@@ -53,7 +53,7 @@ async function refreshCurrent(){try{const r=await fetch('/api/current',{cache:'n
 async function refreshHistory(){try{const r=await fetch('/api/history?range='+activeRange,{cache:'no-store'});if(!r.ok){const info=await r.json().catch(()=>({}));throw Error(info.detail||'Upstream service unavailable');}const data=await r.json();if(data.range!==activeRange)return;const rows=data.observations;
  chart('chart-temp',rows,[{key:'bme_temp_c',color:'#80c6e8'},{key:'dew_point_c',color:'#8de5b5'}]);
  chart('chart-humidity',rows,[{key:'humidity_pct',color:'#80c6e8'}]);
- chart('chart-pressure',rows,[{key:'pressure_hpa',color:'#80c6e8',convert:inhg}]);
+ chart('chart-pressure',rows,[{key:'pressure_sealevel_hpa',color:'#80c6e8',convert:inhg}]);
  chart('chart-sky',rows,[{key:'sky_temperature_c',color:'#80c6e8'}]);
  chart('chart-rain',rows,[{key:'rain_daily_mm',color:'#8de5b5'}],true);
  }catch(e){for(const id of ['chart-temp','chart-humidity','chart-pressure','chart-sky','chart-rain'])$(id).textContent='History unavailable: '+e.message;}}
